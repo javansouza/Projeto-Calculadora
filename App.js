@@ -19,19 +19,9 @@ export default class App extends Component{
     if(n === '.' && this.state.displayValue.includes('.')){
       return
     }
-
-   
+       
     const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay
     const currentValue = clearDisplay ? '' : this.state.displayValue
-  
-    /*if(n === '.' && this.state.displayValue === '0'){
-      const displayValue = currentValue + '0' + n 
-      this.setState({displayValue, clearDisplay: false})
-    }else{
-     const displayValue = currentValue + n 
-      this.setState({displayValue, clearDisplay: false})
-    }*/
-
     const displayValue = currentValue + n 
     this.setState({displayValue, clearDisplay: false})
     
@@ -50,11 +40,44 @@ export default class App extends Component{
   }
 
   setOperation = operation => {
-    
+
+    if(this.state.current === 0 && operation !== '='){
+      this.setState({operation, current: 1, clearDisplay: true})
+    }
+     
+  
+    if(this.state.current === 1 && operation === '='){
+      switch(this.state.operation){
+
+        case '/':
+          this.state.values[0] = (this.state.values[0] / this.state.values[1])
+          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
+        break
+
+        case '*':
+          this.state.values[0] = (this.state.values[0] * this.state.values[1])
+          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
+        break
+
+        case '-':
+          this.state.values[0] = this.state.values[0] - this.state.values[1]
+          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
+        break
+
+        case '+':
+          this.state.values[0] = (this.state.values[0] + this.state.values[1])
+          this.setState({displayValue:this.state.values[0], current:0,clearDisplay: true })
+        break
+
+      }
+      
+    }
   }
 
+  
+
   render(){
-    return(
+    return(      
       <View style={styles.container}>
         <Display value={this.state.displayValue}></Display>
         <View style={styles.buttons}>
@@ -83,7 +106,6 @@ export default class App extends Component{
 
 
 } 
-
 
 const styles = StyleSheet.create({
   container:{
