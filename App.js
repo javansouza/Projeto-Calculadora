@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 import {StyleSheet, Text, View} from 'react-native'
 import Button from './src/components/Button'
 import Display from './src/components/Display'
+import DisplayMemory from './src/DisplayMemory'
 
 const initialState = {
   displayValue: '0',
@@ -9,6 +10,9 @@ const initialState = {
   operation: null,
   values: [0, 0],
   current: 0,
+  displayMemory: '',
+  operationIndex: 0,
+  operationBool: false,
 }
 
 export default class App extends Component{
@@ -16,14 +20,17 @@ export default class App extends Component{
   state = {...initialState}
 
   addDigit = n => {
-    if(n === '.' && this.state.displayValue.includes('.')){
-      return
-    }
-       
+
+    this.setState({operationBool: false})
+            
     const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay
+   
+      if(n === '.' && this.state.displayValue.includes('.') && this.state.clearDisplay === false){
+        return
+      }
     const currentValue = clearDisplay ? '' : this.state.displayValue
     const displayValue = currentValue + n 
-    this.setState({displayValue, clearDisplay: false})
+    this.setState({displayValue, clearDisplay: false, displayMemory: '' + this.state.displayMemory + n })
     
       if(n !== '.'){
       const newValue = parseFloat(displayValue)
@@ -33,55 +40,63 @@ export default class App extends Component{
     }
 
     
+        
   }
 
   clearMemory = () => {
     this.setState({...initialState})
   }
 
-  setOperation = operation => {
+  setOperation = operation => {     
+      if(this.state.operationBool === false){
+        this.setState({operationBool: true})
+        this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' '})   
 
-    if(this.state.current === 0 && operation !== '='){
-      this.setState({operation, current: 1, clearDisplay: true})
-    }
-     
-  
-    if(this.state.current === 1 && operation === '='){
-      switch(this.state.operation){
+        if(this.state.operation !== null && operation !== null){    
 
-        case '/':
-          this.state.values[0] = (this.state.values[0] / this.state.values[1])
-          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
-        break
+        this.state.values[0] = eval(`${this.state.values[0]} ${this.state.operation} ${this.state.values[1]}`)  
 
-        case '*':
-          this.state.values[0] = (this.state.values[0] * this.state.values[1])
-          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
-        break
-
-        case '-':
-          this.state.values[0] = this.state.values[0] - this.state.values[1]
-          this.setState({displayValue: this.state.values[0], current:0,clearDisplay: true })
-        break
-
-        case '+':
-          this.state.values[0] = (this.state.values[0] + this.state.values[1])
-          this.setState({displayValue:this.state.values[0], current:0,clearDisplay: true })
-        break
-
-      }
-      
-    }
+          if(operation === '='){       
+          this.setState({operationBool: false})
+          this.setState({current: 1, operation: null, clearDisplay: true, displayValue: this.state.values[0] })             
+          this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' ' + this.state.values[0]}) 
+          this.state.values[1] = 0             
+          }else{
+             
+           // this.state.values[0] = eval(`${this.state.values[0]} ${this.state.operation} ${this.state.values[1]}`)    
+            this.setState({current: 1, operation,  clearDisplay: true, displayValue: this.state.values[0]})        
+            if(this.state.operationBool === false){
+              this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' '})
+            }else{
+              this.setState({displayMemory: this.state.displayMemory + ' ' + '=' + ' ' + this.state.values[0] + ' ' + operation + ' '}) 
+            }       
+           
+           
+           }
+                
+        
+        }else{
+          this.setState({current: 1, operation,  clearDisplay: true}) 
+        }     
+        
+      }                 
+         
   }
 
-  
+  mudarSinal = () => {
+    this.setState({displayValue: this.state.displayValue * -1})
+    this.state.values[this.state.current] =  this.state.values[this.state.current] * -1
+    this.setState({displayMemory: this.state.displayMemory + ' +/ ' + this.state.values[this.state.current]}) 
+  }
 
   render(){
     return(      
       <View style={styles.container}>
+        <DisplayMemory value={this.state.displayMemory}></DisplayMemory>
         <Display value={this.state.displayValue}></Display>
         <View style={styles.buttons}>
-          <Button label='AC' triple onClick={this.clearMemory}/>
+          <Button label='AC' double onClick={this.clearMemory}/>
+          <Button label='+/-' onClick={this.mudarSinal}/>          
           <Button label='/' operation onClick={() => this.setOperation('/')}/>
           <Button label='7' onClick={() => this.addDigit(7)} />
           <Button label='8' onClick={() => this.addDigit(8)}/> 
@@ -116,7 +131,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   }
-
   
     
 })
