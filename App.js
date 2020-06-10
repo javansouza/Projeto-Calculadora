@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {StyleSheet, Text, View} from 'react-native'
+import {StyleSheet, Text, View, ScrollView} from 'react-native'
 import Button from './src/components/Button'
 import Display from './src/components/Display'
 import DisplayMemory from './src/DisplayMemory'
@@ -13,6 +13,7 @@ const initialState = {
   displayMemory: '',
   operationIndex: 0,
   operationBool: false,
+  equalBool: false,
 }
 
 export default class App extends Component{
@@ -21,8 +22,9 @@ export default class App extends Component{
 
   addDigit = n => {
 
-    this.setState({operationBool: false})
-            
+    this.setState({operationBool: false})   
+    this.setState({equalBool: false})
+   
     const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay
    
       if(n === '.' && this.state.displayValue.includes('.') && this.state.clearDisplay === false){
@@ -48,6 +50,7 @@ export default class App extends Component{
   }
 
   setOperation = operation => {     
+    if(this.state.equalBool === false || operation !== '='){
       if(this.state.operationBool === false){
         this.setState({operationBool: true})
         this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' '})   
@@ -56,7 +59,8 @@ export default class App extends Component{
 
         this.state.values[0] = eval(`${this.state.values[0]} ${this.state.operation} ${this.state.values[1]}`)  
 
-          if(operation === '='){       
+          if(operation === '=' && this.state.equalBool === false){       
+          this.setState({equalBool: true})
           this.setState({operationBool: false})
           this.setState({current: 1, operation: null, clearDisplay: true, displayValue: this.state.values[0] })             
           this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' ' + this.state.values[0]}) 
@@ -65,7 +69,7 @@ export default class App extends Component{
              
            // this.state.values[0] = eval(`${this.state.values[0]} ${this.state.operation} ${this.state.values[1]}`)    
             this.setState({current: 1, operation,  clearDisplay: true, displayValue: this.state.values[0]})        
-            if(this.state.operationBool === false){
+            if(this.state.operationBool === true){
               this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' '})
             }else{
               this.setState({displayMemory: this.state.displayMemory + ' ' + '=' + ' ' + this.state.values[0] + ' ' + operation + ' '}) 
@@ -81,18 +85,24 @@ export default class App extends Component{
         
       }                 
          
+    }
   }
 
   mudarSinal = () => {
     this.setState({displayValue: this.state.displayValue * -1})
     this.state.values[this.state.current] =  this.state.values[this.state.current] * -1
-    this.setState({displayMemory: this.state.displayMemory + ' +/ ' + this.state.values[this.state.current]}) 
+    if(this.state.values[this.state.current] === 0){
+      this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current-1]}) 
+    }else{
+      this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current]}) 
+    }
+    
   }
 
   render(){
     return(      
       <View style={styles.container}>
-        <DisplayMemory value={this.state.displayMemory}></DisplayMemory>
+        <DisplayMemory value={this.state.displayMemory}></DisplayMemory>             
         <Display value={this.state.displayValue}></Display>
         <View style={styles.buttons}>
           <Button label='AC' double onClick={this.clearMemory}/>

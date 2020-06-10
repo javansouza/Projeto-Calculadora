@@ -1,5 +1,5 @@
 import React from 'react'
-import {StyleSheet, Text, View} from 'react-native'
+import {StyleSheet, Text, View, ScrollView} from 'react-native'
 
 const styles = StyleSheet.create({
     display:{
@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     },
 
     displayValue:{
-        fontSize: 25,
+        fontSize: 20,
         color: '#fff',
 
     }
@@ -20,7 +20,9 @@ const styles = StyleSheet.create({
 export default porps => 
 
     <View style={styles.display}>
+        <ScrollView horizontal={true}> 
         <Text style={styles.displayValue} numberOfLines={1}>
             {porps.value}
         </Text>
+        </ScrollView>        
     </View>
