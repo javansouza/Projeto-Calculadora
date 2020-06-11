@@ -194,13 +194,15 @@ export default class App extends Component{
   }
 
   mudarSinal = () => {
-   
-    this.setState({displayValue: this.state.displayValue * -1})
     
-  
+    
+  if(this.state.values[0] !== 0 || this.state.values[1] !== 0){
+
     if(this.state.equalBool === false){
+      this.setState({displayValue: this.state.displayValue * -1})
       this.state.values[this.state.current] =  this.state.values[this.state.current] * -1
     }else{
+      this.setState({displayValue: this.state.displayValue * -1})
       this.state.values[this.state.current-1] =  this.state.values[this.state.current-1] * -1
     }
 
@@ -209,6 +211,8 @@ export default class App extends Component{
       this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current-1]}) 
     }else{
       this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current] }) 
+    }
+
     }
   }
   
