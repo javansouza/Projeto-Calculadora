@@ -1,10 +1,10 @@
 import React, {Component} from 'react'
-import {StyleSheet, Text, View, ScrollView} from 'react-native'
+import {StyleSheet, Text, View, ScrollView, TouchableHighlightBase} from 'react-native'
 import Button from './src/components/Button'
 import Display from './src/components/Display'
 import DisplayMemory from './src/DisplayMemory'
 
-//Falta corrigir o bug ao usar numerio fracionado 3 vezes e mudança de sinal
+//Falta corrigir funcionalidade de mudar o sinal
 
 //Constante que define o estado inicial da aplicação
 const initialState = {
@@ -21,7 +21,7 @@ const initialState = {
   //O primeiro e segundo valor da operação que será realizada
   values: [0, 0],
 
-  //O valor do indice referente o array values
+  //O valor do índice referente o array values
   current: 0,
 
   //O display superior que acumula as operação realizadas anteriormente
@@ -34,34 +34,34 @@ const initialState = {
   operationBool: false,
 
   //verifica se a operação digitada foi ( = )
-  equalBool: false,
-
-  negativeIndex: 0,
+  equalBool: false, 
 
 }
 
 
 export default class App extends Component{
 
-  //cria um objeto do tipo estado com todos os atributos do constante initialStade
+  //cria um clone do objeto initialStade no escopo da classe App
   state = {...initialState}
 
   addDigit = n => {
 
-    //cria a constante local para verificar atribuir o estado do display
+     //cria a constante local para verificar atribuir o estado do display
     const clearDisplay = this.state.displayValue === '0' || this.state.clearDisplay
    
     //verifica se já foi digitado ponto
-    if(n === '.' && this.state.displayValue.includes('.') && !clearDisplay){
-        return
-    }
-   
-   
+    if(n === '.' && this.state.displayValue.toString().includes('.') && !clearDisplay){
+        return 
+    } 
+    
+     
     //cria a constante local e guardar o valor que está no display como string
     const currentValue = clearDisplay ? '' : this.state.displayValue
    
     //cria a constante local e guardar o valor que está no display + o valor digitado, concatenando as duas strings como string
     const displayValue = currentValue + n 
+
+            
     
     //Se o usuário realizou uma operação e não deseja realizar outra operação com o resultado 
     //os displays exibirão o valor digitado
@@ -78,7 +78,10 @@ export default class App extends Component{
      if(n === 0 && this.state.displayValue === '0'){
       this.setState({displayMemory: ''})
     }
-
+    //Acrescenta o zero quando foir inserido . o display for zero: Anterior: . - Atual 0.
+    if(n === '.' && this.state.values[this.state.current].toString() === '0'){
+      this.setState({displayMemory: this.state.displayMemory + '0.', displayValue: '0.'})
+    }
   
       if(n !== '.'){
       //transforma o valor digitado atual String em Float e guarda na constante  
@@ -95,6 +98,8 @@ export default class App extends Component{
     this.setState({operationBool: false})   
     this.setState({equalBool: false})
 
+    
+
    
         
   }
@@ -106,7 +111,9 @@ export default class App extends Component{
 
   //É chamada quando é inserida alguma das operações: ( + - / * = )
   setOperation = operation => {     
-    
+    if(this.state.values[1] === 0 && operation === '='){
+          return
+      }
     //Impede que a operação igual seja digitada duas vezes
     if(this.state.equalBool === false || operation !== '='){
 
@@ -148,7 +155,7 @@ export default class App extends Component{
           this.setState({current: 1, operation: null, clearDisplay: true, displayValue: this.state.values[0] })  
           
           //atualiza o display de memória acumulando os valores digitados mais a ultima operação
-          this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' ' + this.state.values[0] + ' ' }) 
+          this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' ' + this.state.values[0]}) 
                    
           //informa que a saída decorreu da operação igual
           this.setState({outputIndex: 1})
@@ -160,26 +167,24 @@ export default class App extends Component{
           // Caso a segunda operação realizada não seja igual, a aplicação ralizada a operação cumulativa
           }else{           
                          
-
-            //if(this.state.operationBool === true){
-
               this.setState({current: 1, operation,  clearDisplay: true, displayValue: this.state.values[0]})    
               
               //Display de memória com o " = " após duas operações:
-              this.setState({displayMemory: this.state.displayMemory + ' ' + '=' + ' ' + this.state.values[0] + ' ' + operation + ' '}) 
+             // this.setState({displayMemory: this.state.displayMemory + ' ' + '=' + ' ' + this.state.values[0] + ' ' + operation + ' '}) 
             
             
               //Display de memória sem escrever o " = " após duas operações:
-              //this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' saida 2: operacao ' + this.state.operationBool + ' igual ' + this.state.equalBool})             
+              this.setState({displayMemory: this.state.displayMemory + ' ' + operation + ' '})             
               
-              this.setState({outputIndex: 2})
-          //  }       
+              //A saída dois indica que o usuário realizou uma operação e com o resultado deseja realizar outra operação
+              this.setState({outputIndex: 2})     
            
            
            }
                 
         
         }else{
+          
           this.setState({current: 1, operation,  clearDisplay: true}) 
         }     
         
@@ -190,19 +195,20 @@ export default class App extends Component{
 
   mudarSinal = () => {
    
-    if(this.state.values[0] !== 0 || this.state.values[1]!== 0){
+    this.setState({displayValue: this.state.displayValue * -1})
+    
+  
+    if(this.state.equalBool === false){
+      this.state.values[this.state.current] =  this.state.values[this.state.current] * -1
+    }else{
+      this.state.values[this.state.current-1] =  this.state.values[this.state.current-1] * -1
+    }
 
-        
-      if(this.state.operationEqual === false && operationBool === false){
-        this.setState({displayValue: this.state.displayValue * -1})
-        this.state.values[this.state.current] =  parseFloat(this.state.values[this.state.current] * -1)   
-        this.setState({displayMemory: this.state.displayMemory + ' +/- ' + this.state.current}) 
-      }else{
-        this.setState({displayValue: this.state.displayValue * -1})
-        this.state.values[this.state.current-1] = parseFloat(this.state.values[this.state.current-1] * -1)   
-        this.setState({displayMemory: this.state.displayMemory + ' +/- ' + this.state.current}) 
-      }
-        
+
+    if(this.state.values[this.state.current] === 0){
+      this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current-1]}) 
+    }else{
+      this.setState({displayMemory: this.state.displayMemory + '  +/-  ' + this.state.values[this.state.current] }) 
     }
   }
   
